@@ -9,6 +9,7 @@ Class = require 'tools.class'.declare
 New   = require 'tools.class'.new
 
 require 'tools.log'
+UD.inspect = require 'tools.inspect'
 
 ---@class Log
 log = New 'Log' {

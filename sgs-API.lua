@@ -3947,3 +3947,6 @@ function sgs.GetProperty(obj, property_name) end
 --- 弹出一个警告框，对话框内容为msg
 ---@param msg string @ 警告的内容
 function sgs.Alert(msg) end
+
+---@return sgs.SkillList
+function sgs.SkillList() end

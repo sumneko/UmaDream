@@ -43,13 +43,13 @@ end
 
 ---@enum(key) Skill.Event
 local skillEventMap = {
-    ['伤害-结束'] = { sgs.DamageComplete, 'toDamage' },
+    ['伤害-造成后'] = { sgs.DamageCaused, 'toDamage' },
 }
 
 ---@alias Skill.EventCallback fun(skill: sgs.Skill, player: sgs.ServerPlayer, data: sgs.QVariant)
 
 ---@class Skill
----@field event fun(self: Skill, event: '伤害-结束', callback: fun(skill: sgs.Skill, player: sgs.ServerPlayer, damage: sgs.DamageStruct)): Skill
+---@field event fun(self: Skill, event: '伤害-造成后', callback: fun(skill: sgs.Skill, player: sgs.ServerPlayer, damage: sgs.DamageStruct)): Skill
 
 ---@param event Skill.Event
 ---@param callback Skill.EventCallback
@@ -76,17 +76,22 @@ function Skill:instance()
         events[i] = eventData.sgsEvent
         eventDataMap[eventData.sgsEvent] = eventData
     end
+    print('skill instance!', self.name, UD.inspect(events))
 
     local name = ('UmaSkill_%03d'):format(self.uid)
     local skill = sgs.CreateTriggerSkill {
         name = name,
+        global = true,
         frequency = skillTypeMap[self.data.type],
         events = events,
         on_trigger = function (skill, event, player, data)
             local eventData = eventDataMap[event]
             if eventData then
                 local triggerData = data[eventData.dataKey](data)
-                return eventData(skill, player, triggerData)
+                local suc, res = xpcall(eventData.callback, log.error, skill, player, triggerData)
+                if suc then
+                    return res
+                end
             end
             return false
         end,
@@ -96,6 +101,10 @@ function Skill:instance()
         [name] = self.name,
         [':' .. name] = self.data.desc,
     }
+
+    if not sgs.Sanguosha:getSkill(name) then
+        sgs.SkillList():append(skill)
+    end
 
     self.handle = skill
 
