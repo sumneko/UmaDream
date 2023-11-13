@@ -348,9 +348,9 @@ function Player:addSkill(skill_name) end
 function Player:loseSkill(skill_name) end
 
 ---@param skill sgs.Skill
----@param include_lose boolean
+---@param include_lose? boolean
 ---@return boolean
----@overload fun(skill_name: string, include_lose: boolean): boolean
+---@overload fun(self: self, skill_name: string, include_lose?: boolean): boolean
 function Player:hasSkill(skill, include_lose) end
 
 ---@param skill_name string
@@ -3737,14 +3737,14 @@ sgs.CommandType = {}
 ---@class TriggerSkillSpec
 ---@field name string
 ---@field frequency sgs.Skill_Frequency
----@field limit_mark string
----@field guhuo_type string
+---@field limit_mark? string
+---@field guhuo_type? string
 ---@field events sgs.TriggerEvent | sgs.TriggerEvent[]
----@field global boolean
+---@field global? boolean
 ---@field on_trigger fun(self: sgs.LuaTriggerSkill, event: sgs.TriggerEvent, player: sgs.ServerPlayer, data: sgs.QVariant): boolean
 ---@field can_trigger fun(self: sgs.LuaTriggerSkill, target: sgs.ServerPlayer): boolean
----@field view_as_skill sgs.LuaViewAsSkill
----@field priority number | table<sgs.TriggerEvent, number>
+---@field view_as_skill? sgs.LuaViewAsSkill
+---@field priority? number | table<sgs.TriggerEvent, number>
 
 ---@param spec TriggerSkillSpec
 ---@return sgs.LuaTriggerSkill
