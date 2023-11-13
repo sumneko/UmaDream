@@ -3739,10 +3739,10 @@ sgs.CommandType = {}
 ---@field frequency sgs.Skill_Frequency
 ---@field limit_mark? string
 ---@field guhuo_type? string
----@field events sgs.TriggerEvent | sgs.TriggerEvent[]
+---@field events? sgs.TriggerEvent | sgs.TriggerEvent[]
 ---@field global? boolean
----@field on_trigger fun(self: sgs.LuaTriggerSkill, event: sgs.TriggerEvent, player: sgs.ServerPlayer, data: sgs.QVariant): boolean
----@field can_trigger fun(self: sgs.LuaTriggerSkill, target: sgs.ServerPlayer): boolean
+---@field on_trigger? fun(self: sgs.LuaTriggerSkill, event: sgs.TriggerEvent, player: sgs.ServerPlayer, data: sgs.QVariant): boolean
+---@field can_trigger? fun(self: sgs.LuaTriggerSkill, target: sgs.ServerPlayer): boolean
 ---@field view_as_skill? sgs.LuaViewAsSkill
 ---@field priority? number | table<sgs.TriggerEvent, number>
 

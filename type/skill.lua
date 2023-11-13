@@ -10,6 +10,11 @@ local skillTypeMap = {
 ---@overload fun(name: string, data: Skill.Data): Skill
 local Skill = Class 'Skill'
 
+---@type table<string, Skill>
+Skill.map = {}
+
+local uid = 0
+
 ---@class Skill.Data
 ---@field type Skill.Type
 ---@field desc? string
@@ -17,7 +22,7 @@ local Skill = Class 'Skill'
 ---@class Skill.EventData
 ---@field event Skill.Event
 ---@field callback Skill.EventCallback
----@field sgsEvent integer
+---@field sgsEvent sgs.TriggerEvent
 ---@field dataKey string
 
 ---@param name string
@@ -29,6 +34,11 @@ function Skill:__init(name, data)
     self.data = data
     ---@type Skill.EventData[]
     self.events = {}
+    uid = uid + 1
+    ---@type integer
+    self.uid = uid
+
+    Skill.map[name] = self
 end
 
 ---@enum(key) Skill.Event
@@ -60,15 +70,16 @@ function Skill:instance()
         return self.handle
     end
     local events = {}
-    ---@type table<integer, Skill.EventData>
+    ---@type table<sgs.TriggerEvent, Skill.EventData>
     local eventDataMap = {}
     for i, eventData in ipairs(self.events) do
         events[i] = eventData.sgsEvent
         eventDataMap[eventData.sgsEvent] = eventData
     end
 
+    local name = ('UmaSkill_%03d'):format(self.uid)
     local skill = sgs.CreateTriggerSkill {
-        name = self.name,
+        name = name,
         frequency = skillTypeMap[self.data.type],
         events = events,
         on_trigger = function (skill, event, player, data)
@@ -79,9 +90,11 @@ function Skill:instance()
             end
             return false
         end,
-        can_trigger = function (skill, player)
-            return player:hasSkill(skill:objectName())
-        end,
+    }
+
+    sgs.LoadTranslationTable {
+        [name] = self.name,
+        [':' .. name] = self.data.desc,
     }
 
     self.handle = skill

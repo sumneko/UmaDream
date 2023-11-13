@@ -14,40 +14,32 @@ do
     ---@diagnostic disable-next-line: undefined-global
     local config = config
     config.kingdoms[#config.kingdoms+1] = '马娘'
-    config.kingdom_colors['马娘'] = '#96943D'
+    config.kingdom_colors['马娘'] = '#ffcc00'
 end
 
 require 'type.uma'
 require 'type.skill'
 
----@type table<string, Uma>
-UD.umaMap = {}
-
----@type table<string, Skill>
-UD.skillMap = {}
-
 ---@param name string
 ---@param data Uma.Data
 function UD.createUma(name, data)
-    UD.umaMap[name] = New 'Uma' (name, data)
-    return UD.umaMap[name]
+    return New 'Uma' (name, data)
 end
 
 ---@param name string
 ---@param data Skill.Data
 function UD.createSkill(name, data)
-    UD.skillMap[name] = New 'Skill' (name, data)
-    return UD.skillMap[name]
+    return New 'Skill' (name, data)
 end
 
 require 'umas.hongxiao'
-require 'umas.miemie'
+--require 'umas.miemie'
 
-for _, uma in pairs(UD.umaMap) do
-    uma:register(umaDream)
+for _, uma in pairs(Class 'Uma' .map) do
+    uma:instance(umaDream)
 end
-for _, skill in pairs(UD.skillMap) do
-    skill:instance()
+for _, skill in pairs(Class 'Skill'.map) do
+    --skill:instance()
 end
 
 return { umaDream }

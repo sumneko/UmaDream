@@ -1,7 +1,8 @@
 UD.createUma('虹ヶ咲I', {
-    hp     = 6,
-    desc   = '🐷',
-    skills = {'画🐽', '拍🐽', '发🐽'},
+    hp       = 6,
+    title    = '🐷',
+    designer = '最萌小汐',
+    --skills   = {'画🐽', '拍🐽', '发🐽'},
 })
 
 UD.createSkill('画🐽', {
@@ -13,5 +14,5 @@ UD.createSkill('画🐽', {
 ]],
 })
 : event('伤害-结束', function (self, player, data)
-    print('伤害-结束')
+    print('造成了伤害！')
 end)
