@@ -8,6 +8,16 @@ UD = {}
 Class = require 'tools.class'.declare
 New   = require 'tools.class'.new
 
+require 'tools.log'
+
+---@class Log
+log = New 'Log' {
+    path = './extensions/UmaDream/log/test.log',
+}
+
+print = log.debug
+log.info('你好马娘！')
+
 -- 添加新势力
 do
     require 'lua.config'
@@ -35,11 +45,11 @@ end
 require 'umas.hongxiao'
 --require 'umas.miemie'
 
-for _, uma in pairs(Class 'Uma' .map) do
+for _, uma in pairs(Class 'Uma'.map) do
     uma:instance(umaDream)
 end
 for _, skill in pairs(Class 'Skill'.map) do
-    --skill:instance()
+    skill:instance()
 end
 
 return { umaDream }
