@@ -2090,7 +2090,8 @@ function Room:getLieges(kingdom, lord) end
 
 ---@param log sgs.LogMessage
 ---@param player sgs.ServerPlayer
----@overload fun(log: sgs.LogMessage, players: sgs.SPlayerList)
+---@overload fun(self: self, log: sgs.LogMessage)
+---@overload fun(self: self, log: sgs.LogMessage, players: sgs.SPlayerList)
 function Room:sendLog(log, player) end
 
 ---@param player sgs.ServerPlayer
@@ -2587,20 +2588,20 @@ function QVariant:toStringList() end
 function QVariant:toBool() end
 
 ---@param value integer
----@overload fun(damage: sgs.DamageStruct)
----@overload fun(effect: sgs.CardEffectStruct)
----@overload fun(effect: sgs.SlashEffectStruct)
----@overload fun(use: sgs.CardUseStruct)
----@overload fun(card: sgs.Card)
----@overload fun(player: sgs.ServerPlayer)
----@overload fun(dying: sgs.DyingStruct)
----@overload fun(recover: sgs.RecoverStruct)
----@overload fun(judge: sgs.JudgeStruct)
----@overload fun(pindian: sgs.PindianStruct)
----@overload fun(move: sgs.CardsMoveOneTimeStruct)
----@overload fun(phase: sgs.PhaseChangeStruct)
----@overload fun(resp: sgs.CardResponseStruct)
----@overload fun(intlist: sgs.IntList)
+---@overload fun(self: self, damage: sgs.DamageStruct)
+---@overload fun(self: self, effect: sgs.CardEffectStruct)
+---@overload fun(self: self, effect: sgs.SlashEffectStruct)
+---@overload fun(self: self, use: sgs.CardUseStruct)
+---@overload fun(self: self, card: sgs.Card)
+---@overload fun(self: self, player: sgs.ServerPlayer)
+---@overload fun(self: self, dying: sgs.DyingStruct)
+---@overload fun(self: self, recover: sgs.RecoverStruct)
+---@overload fun(self: self, judge: sgs.JudgeStruct)
+---@overload fun(self: self, pindian: sgs.PindianStruct)
+---@overload fun(self: self, move: sgs.CardsMoveOneTimeStruct)
+---@overload fun(self: self, phase: sgs.PhaseChangeStruct)
+---@overload fun(self: self, resp: sgs.CardResponseStruct)
+---@overload fun(self: self, intlist: sgs.IntList)
 function QVariant:setValue(value) end
 
 ---@return sgs.DamageStruct

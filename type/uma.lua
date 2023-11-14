@@ -36,7 +36,7 @@ function Uma:instance(package)
         return self.handle
     end
     local name = ('Uma_%03d'):format(self.uid)
-    local general = sgs.General(package, name, '马娘', self.data.hp, true, false, false)
+    local general = sgs.General(package, name, '马娘', self.data.hp, false, false, false)
     self.handle = general
 
     sgs.LoadTranslationTable {
