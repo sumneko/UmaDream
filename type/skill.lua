@@ -44,12 +44,14 @@ end
 ---@enum(key) Skill.Event
 local skillEventMap = {
     ['伤害-造成后'] = { sgs.DamageCaused, 'toDamage' },
+    ['阶段-开始']   = { sgs.EventPhaseStart, nil }
 }
 
----@alias Skill.EventCallback fun(skill: sgs.Skill, player: sgs.ServerPlayer, data: sgs.QVariant)
+---@alias Skill.EventCallback fun(skill: sgs.Skill, player: sgs.ServerPlayer, context: sgs.QVariant)
 
 ---@class Skill
----@field event fun(self: Skill, event: '伤害-造成后', callback: fun(skill: sgs.Skill, player: sgs.ServerPlayer, damage: sgs.DamageStruct)): Skill
+---@field event fun(self: Skill, event: '伤害-造成后', callback: fun(skill: sgs.Skill, player: sgs.ServerPlayer, context: sgs.QVariant, damage: sgs.DamageStruct)): Skill
+---@field event fun(self: Skill, event: '阶段-开始', callback: fun(skill: sgs.Skill, player: sgs.ServerPlayer, context: sgs.QVariant)): Skill
 
 ---@param event Skill.Event
 ---@param callback Skill.EventCallback
@@ -87,9 +89,9 @@ function Skill:compileEvents()
         local eventData = eventDatas[1]
         local key = eventData.dataKey
         if #eventDatas == 1 then
-            callbackMap[triggerEvent] = function (skill, player, data)
-                local triggerData = data[key](data)
-                local suc, res = xpcall(eventData.callback, log.error, skill, player, triggerData)
+            callbackMap[triggerEvent] = function (skill, player, context)
+                local triggerData = key and context[key](context)
+                local suc, res = xpcall(eventData.callback, log.error, skill, player, context, triggerData)
                 if suc then
                     return res
                 end
@@ -100,10 +102,10 @@ function Skill:compileEvents()
             for _, eData in ipairs(eventDatas) do
                 callbacks[#callbacks+1] = eData.callback
             end
-            callbackMap[eventData.sgsEvent] = function (skill, player, data)
-                local triggerData = data[key](data)
+            callbackMap[eventData.sgsEvent] = function (skill, player, context)
+                local triggerData = key and context[key](context)
                 for _, callback in ipairs(callbacks) do
-                    local suc, res = xpcall(callback, log.error, skill, player, triggerData)
+                    local suc, res = xpcall(callback, log.error, skill, player, context, triggerData)
                     if suc and res ~= nil then
                         return res
                     end
@@ -130,10 +132,10 @@ function Skill:instance()
         global = true,
         frequency = skillTypeMap[self.data.type],
         events = events,
-        on_trigger = function (skill, event, player, data)
+        on_trigger = function (skill, event, player, context)
             local callback = callbackMap[event]
             if callback then
-                return callback(skill, player, data)
+                return callback(skill, player, context)
             end
             return false
         end,
