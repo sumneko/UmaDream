@@ -31,18 +31,6 @@ end
 require 'type.uma'
 require 'type.skill'
 
----@param name string
----@param data Uma.Data
-function UD.createUma(name, data)
-    return New 'Uma' (name, data)
-end
-
----@param name string
----@param data Skill.Data
-function UD.createSkill(name, data)
-    return New 'Skill' (name, data)
-end
-
 require 'umas.hongxiao'
 --require 'umas.miemie'
 

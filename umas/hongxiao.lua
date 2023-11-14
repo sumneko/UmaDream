@@ -1,11 +1,11 @@
-UD.createUma('虹ヶ咲I', {
+New 'Uma' ('虹ヶ咲I', {
     hp       = 6,
     title    = '🐷',
     designer = '最萌小汐',
     skills   = {'画🐽', '拍🐽', '发🐽'},
 })
 
-UD.createSkill('画🐽', {
+New 'Skill' ('画🐽', {
     type = '自动',
     desc = [[
 你每造成1点伤害，对方获得1层“🐽”。
@@ -14,5 +14,14 @@ UD.createSkill('画🐽', {
 ]],
 })
 : event('伤害-造成后', function (self, player, damage)
-    print('造成了伤害！')
+    if damage.from ~= player
+    or not damage.to
+    or damage.to == player then
+        return
+    end
+    damage.to:gainMark('&zhubi', 1)
 end)
+
+sgs.LoadTranslationTable {
+    ['zhubi'] = '🐽',
+}

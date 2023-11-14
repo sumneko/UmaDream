@@ -64,18 +64,64 @@ function Skill:event(event, callback)
     return self
 end
 
+---@private
+---@return sgs.TriggerEvent[]
+---@return table<sgs.TriggerEvent, function>
+function Skill:compileEvents()
+    ---@type sgs.TriggerEvent[]
+    local events = {}
+    ---@type table<sgs.TriggerEvent, Skill.EventData[]>
+    local eventMap = {}
+
+    for _, eventData in ipairs(self.events) do
+        if not eventMap[eventData.sgsEvent] then
+            events[#events+1] = eventData.sgsEvent
+            eventMap[eventData.sgsEvent] = {}
+        end
+        table.insert(eventMap[eventData.sgsEvent], eventData)
+    end
+
+    ---@type table<sgs.TriggerEvent, function>
+    local callbackMap = {}
+    for triggerEvent, eventDatas in pairs(eventMap) do
+        local eventData = eventDatas[1]
+        local key = eventData.dataKey
+        if #eventDatas == 1 then
+            callbackMap[triggerEvent] = function (skill, player, data)
+                local triggerData = data[key](data)
+                local suc, res = xpcall(eventData.callback, log.error, skill, player, triggerData)
+                if suc then
+                    return res
+                end
+                return false
+            end
+        else
+            local callbacks = {}
+            for _, eData in ipairs(eventDatas) do
+                callbacks[#callbacks+1] = eData.callback
+            end
+            callbackMap[eventData.sgsEvent] = function (skill, player, data)
+                local triggerData = data[key](data)
+                for _, callback in ipairs(callbacks) do
+                    local suc, res = xpcall(callback, log.error, skill, player, triggerData)
+                    if suc and res ~= nil then
+                        return res
+                    end
+                end
+                return false
+            end
+        end
+    end
+
+    return events, callbackMap
+end
+
 ---@return sgs.Skill
 function Skill:instance()
     if self.handle then
         return self.handle
     end
-    local events = {}
-    ---@type table<sgs.TriggerEvent, Skill.EventData>
-    local eventDataMap = {}
-    for i, eventData in ipairs(self.events) do
-        events[i] = eventData.sgsEvent
-        eventDataMap[eventData.sgsEvent] = eventData
-    end
+    local events, callbackMap = self:compileEvents()
     print('skill instance!', self.name, UD.inspect(events))
 
     local name = ('UmaSkill_%03d'):format(self.uid)
@@ -85,13 +131,9 @@ function Skill:instance()
         frequency = skillTypeMap[self.data.type],
         events = events,
         on_trigger = function (skill, event, player, data)
-            local eventData = eventDataMap[event]
-            if eventData then
-                local triggerData = data[eventData.dataKey](data)
-                local suc, res = xpcall(eventData.callback, log.error, skill, player, triggerData)
-                if suc then
-                    return res
-                end
+            local callback = callbackMap[event]
+            if callback then
+                return callback(skill, player, data)
             end
             return false
         end,
