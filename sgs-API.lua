@@ -268,7 +268,7 @@ function Player:setPhase(phase) end
 function Player:getAttackRange(include_weapon) end
 
 ---@param other sgs.Player
----@param distance_fix integer
+---@param distance_fix? integer
 ---@return boolean
 function Player:inMyAttackRange(other, distance_fix) end
 
@@ -693,7 +693,7 @@ function ServerPlayer:clearOnePrivatePile(pile_name) end
 function ServerPlayer:clearPrivatePiles() end
 
 ---@param n integer
----@param reason string
+---@param reason? string
 function ServerPlayer:drawCards(n, reason) end
 
 ---@param skill_name string
@@ -1891,7 +1891,7 @@ function Room:setCurrent(current) end
 function Room:alivePlayerCount() end
 
 ---@param except sgs.ServerPlayer
----@param include_dead boolean
+---@param include_dead? boolean
 ---@return sgs.SPlayerList
 function Room:getOtherPlayers(except, include_dead) end
 
@@ -2312,24 +2312,24 @@ function Room:setCardMapping(card_id, owner, place) end
 ---@param players sgs.SPlayerList
 ---@param n_list sgs.IntList
 ---@param reason string
----@overload fun(player: sgs.ServerPlayer, n: integer, reason: string)
----@overload fun(players: sgs.SPlayerList, n: integer, reason: string)
+---@overload fun(self: self, player: sgs.ServerPlayer, n: integer, reason: string)
+---@overload fun(self: self, players: sgs.SPlayerList, n: integer, reason: string)
 function Room:drawCards(players, n_list, reason) end
 
 ---@param target sgs.ServerPlayer
 ---@param card sgs.Card
 ---@param reason sgs.CardMoveReason
 ---@param unhide boolean
----@overload fun(target: sgs.ServerPlayer, card: sgs.Card, unhide: boolean)
----@overload fun(target: sgs.ServerPlayer, card_id: integer, unhide: boolean)
+---@overload fun(self: self, target: sgs.ServerPlayer, card: sgs.Card, unhide: boolean)
+---@overload fun(self: self, target: sgs.ServerPlayer, card_id: integer, unhide: boolean)
 function Room:obtainCard(target, card, reason, unhide) end
 
 ---@param card sgs.Card
 ---@param reason sgs.CardMoveReason
 ---@param who sgs.ServerPlayer
 ---@param thrower sgs.ServerPlayer
----@overload fun(card_id: integer, who: sgs.ServerPlayer, thrower: sgs.ServerPlayer)
----@overload fun(card: sgs.Card, who: sgs.ServerPlayer, thrower: sgs.ServerPlayer)
+---@overload fun(self: self, card_id: integer, who: sgs.ServerPlayer, thrower: sgs.ServerPlayer)
+---@overload fun(self: self, card: sgs.Card, who: sgs.ServerPlayer, thrower: sgs.ServerPlayer)
 function Room:throwCard(card, reason, who, thrower) end
 
 ---@param card sgs.Card
@@ -2339,14 +2339,14 @@ function Room:throwCard(card, reason, who, thrower) end
 ---@param pileName string
 ---@param reason sgs.CardMoveReason
 ---@param forceMoveVisible boolean
----@overload fun(card: sgs.Card, dstPlayer: sgs.ServerPlayer, dstPlace: sgs.Player_Place, forceMoveVisible: boolean)
----@overload fun(card: sgs.Card, dstPlayer: sgs.ServerPlayer, dstPlace: sgs.Player_Place, reason: sgs.CardMoveReason, forceMoveVisible: boolean)
----@overload fun(card: sgs.Card, srcPlayer: sgs.ServerPlayer, dstPlayer: sgs.ServerPlayer, dstPlace: sgs.Player_Place, reason: sgs.CardMoveReason, forceMoveVisible: boolean)
+---@overload fun(self: self, card: sgs.Card, dstPlayer: sgs.ServerPlayer, dstPlace: sgs.Player_Place, forceMoveVisible: boolean)
+---@overload fun(self: self, card: sgs.Card, dstPlayer: sgs.ServerPlayer, dstPlace: sgs.Player_Place, reason: sgs.CardMoveReason, forceMoveVisible: boolean)
+---@overload fun(self: self, card: sgs.Card, srcPlayer: sgs.ServerPlayer, dstPlayer: sgs.ServerPlayer, dstPlace: sgs.Player_Place, reason: sgs.CardMoveReason, forceMoveVisible: boolean)
 function Room:moveCardTo(card, srcPlayer, dstPlayer, dstPlace, pileName, reason, forceMoveVisible) end
 
 ---@param cards_move sgs.CardsMoveStruct
 ---@param forceMoveVisible boolean
----@overload fun(cards_move: sgs.CardsMoveList, forceMoveVisible: boolean)
+---@overload fun(self: self, cards_move: sgs.CardsMoveList, forceMoveVisible: boolean)
 function Room:moveCardsAtomic(cards_move, forceMoveVisible) end
 
 ---@param player sgs.ServerPlayer
@@ -3742,8 +3742,8 @@ sgs.CommandType = {}
 ---@field guhuo_type? string
 ---@field events? sgs.TriggerEvent | sgs.TriggerEvent[]
 ---@field global? boolean
----@field on_trigger? fun(self: sgs.LuaTriggerSkill, event: sgs.TriggerEvent, player: sgs.ServerPlayer, data: sgs.QVariant): boolean
----@field can_trigger? fun(self: sgs.LuaTriggerSkill, target: sgs.ServerPlayer): boolean
+---@field on_trigger? fun(sgsSkill: sgs.LuaTriggerSkill, event: sgs.TriggerEvent, player: sgs.ServerPlayer, data: sgs.QVariant): boolean
+---@field can_trigger? fun(sgsSkill: sgs.LuaTriggerSkill, target: sgs.ServerPlayer): boolean
 ---@field view_as_skill? sgs.LuaViewAsSkill
 ---@field priority? number | table<sgs.TriggerEvent, number>
 
@@ -3814,19 +3814,19 @@ function sgs.CreateAttackRangeSkill(spec) end
 
 ---@class SkillCardSpec
 ---@field name string
----@field skill_name string
----@field target_fixed boolean
----@field will_throw boolean
----@field can_recast boolean
----@field handling_method sgs.Card_HandlingMethod
----@field mute boolean
----@field filter fun(self: sgs.LuaSkillCard, selected: sgs.Player[], to_select: sgs.Player): boolean
----@field feasible fun(self: sgs.LuaSkillCard, targets: sgs.Player[]): boolean
----@field about_to_use fun(self: sgs.LuaSkillCard, room: sgs.Room, card_use: sgs.CardUseStruct)
----@field on_use fun(self: sgs.LuaSkillCard, room: sgs.Room, source: sgs.ServerPlayer, targets: sgs.ServerPlayer[])
----@field on_effect fun(self: sgs.LuaSkillCard, effect: sgs.CardEffectStruct)
----@field on_validate fun(self: sgs.LuaSkillCard, card_use: sgs.CardUseStruct): sgs.Card
----@field on_validate_in_response fun(self: sgs.LuaSkillCard, user: sgs.ServerPlayer): sgs.Card
+---@field skill_name? string
+---@field target_fixed? boolean
+---@field will_throw? boolean
+---@field can_recast? boolean
+---@field handling_method? sgs.Card_HandlingMethod
+---@field mute? boolean
+---@field filter? fun(sgsCard: sgs.LuaSkillCard, selected: sgs.Player[], to_select: sgs.Player): boolean
+---@field feasible? fun(sgsCard: sgs.LuaSkillCard, targets: sgs.Player[]): boolean
+---@field about_to_use? fun(sgsCard: sgs.LuaSkillCard, room: sgs.Room, card_use: sgs.CardUseStruct)
+---@field on_use fun(sgsCard: sgs.LuaSkillCard, room: sgs.Room, source: sgs.ServerPlayer, targets: sgs.ServerPlayer[])
+---@field on_effect? fun(sgsCard: sgs.LuaSkillCard, effect: sgs.CardEffectStruct)
+---@field on_validate? fun(sgsCard: sgs.LuaSkillCard, card_use: sgs.CardUseStruct): sgs.Card
+---@field on_validate_in_response? fun(sgsCard: sgs.LuaSkillCard, user: sgs.ServerPlayer): sgs.Card
 
 ---@param spec SkillCardSpec
 ---@return sgs.LuaSkillCard
@@ -3875,17 +3875,17 @@ function sgs.CreateTrickCard(spec) end
 
 ---@class ViewAsSkillSpec
 ---@field name string
----@field response_pattern string
----@field response_or_use boolean
----@field expand_pile string
+---@field response_pattern? string
+---@field response_or_use? boolean
+---@field expand_pile? string
 ---@field n integer
----@field guhuo_type string
----@field view_filter fun(self: sgs.LuaViewAsSkill, selected: sgs.Card[], to_select: sgs.Card): boolean
----@field view_as fun(self: sgs.LuaViewAsSkill, cards: sgs.Card[]): sgs.Card
----@field should_be_visible fun(self: sgs.LuaViewAsSkill, player: sgs.Player): boolean
----@field enabled_at_play fun(self: sgs.LuaViewAsSkill, player: sgs.Player): boolean
----@field enabled_at_response fun(self: sgs.LuaViewAsSkill, player: sgs.Player, pattern: string): boolean
----@field enabled_at_nullification fun(self: sgs.LuaViewAsSkill, player: sgs.ServerPlayer): boolean
+---@field guhuo_type? string
+---@field view_filter? fun(sgsSkill: sgs.LuaViewAsSkill, selected: sgs.Card[], to_select: sgs.Card): boolean
+---@field view_as fun(sgsSkill: sgs.LuaViewAsSkill, cards: sgs.Card[]): sgs.Card
+---@field should_be_visible? fun(sgsSkill: sgs.LuaViewAsSkill, player: sgs.Player): boolean
+---@field enabled_at_play? fun(sgsSkill: sgs.LuaViewAsSkill, player: sgs.Player): boolean
+---@field enabled_at_response? fun(sgsSkill: sgs.LuaViewAsSkill, player: sgs.Player, pattern: string): boolean
+---@field enabled_at_nullification? fun(sgsSkill: sgs.LuaViewAsSkill, player: sgs.ServerPlayer): boolean
 
 ---@param spec ViewAsSkillSpec
 ---@return sgs.LuaViewAsSkill

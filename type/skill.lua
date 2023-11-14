@@ -1,6 +1,6 @@
 ---@enum(key) Skill.Type
 local skillTypeMap = {
-    ['主动'] = sgs.Skill_NotFrequent,
+    ['主动'] = 0,
     ['自动'] = sgs.Skill_Frequent,
     ['被动'] = sgs.Skill_Compulsory,
 }
@@ -18,6 +18,7 @@ local uid = 0
 ---@class Skill.Data
 ---@field type Skill.Type
 ---@field desc? string
+---@field useOnce? boolean # 出牌阶段限一次
 
 ---@class Skill.EventData
 ---@field event Skill.Event
@@ -46,6 +47,8 @@ local skillEventMap = {
     ['伤害-造成前'] = { sgs.DamageInflicted, 'toDamage'},
     ['伤害-造成后'] = { sgs.Damage, 'toDamage' },
     ['阶段-开始']   = { sgs.EventPhaseStart, nil },
+    ['主动-使用']   = { -1 },
+    ['主动-条件']   = { -2 },
 }
 
 ---@alias Skill.EventCallback fun(skill: sgs.Skill, player: sgs.ServerPlayer, context: sgs.QVariant)
@@ -54,6 +57,7 @@ local skillEventMap = {
 ---@field event fun(self: Skill, event: '伤害-造成前', callback: fun(skill: sgs.Skill, player: sgs.ServerPlayer, context: sgs.QVariant, damage: sgs.DamageStruct): boolean?): Skill
 ---@field event fun(self: Skill, event: '伤害-造成后', callback: fun(skill: sgs.Skill, player: sgs.ServerPlayer, context: sgs.QVariant, damage: sgs.DamageStruct): boolean?): Skill
 ---@field event fun(self: Skill, event: '阶段-开始', callback: fun(skill: sgs.Skill, player: sgs.ServerPlayer, context: sgs.QVariant)): Skill
+---@field event fun(self: Skill, event: '主动-使用', callback: fun(card: sgs.LuaSkillCard, source: sgs.ServerPlayer, targets: sgs.ServerPlayer[])): Skill
 
 ---@param event Skill.Event
 ---@param callback Skill.EventCallback
@@ -79,7 +83,9 @@ function Skill:compileEvents()
 
     for _, eventData in ipairs(self.events) do
         if not eventMap[eventData.sgsEvent] then
-            events[#events+1] = eventData.sgsEvent
+            if eventData.sgsEvent > 0 then
+                events[#events+1] = eventData.sgsEvent
+            end
             eventMap[eventData.sgsEvent] = {}
         end
         table.insert(eventMap[eventData.sgsEvent], eventData)
@@ -120,6 +126,26 @@ function Skill:compileEvents()
     return events, callbackMap
 end
 
+---@private
+---@param name string
+---@param callbackMap table<sgs.TriggerEvent, function>
+---@return sgs.LuaSkillCard
+function Skill:createDummySkillCard(name, callbackMap)
+    local event = skillEventMap['主动-使用'][1]
+    local callback = callbackMap[event]
+    local card = sgs.CreateSkillCard {
+        name = name .. '_Card',
+        skill_name = name,
+        target_fixed = true,
+        on_use = function (sgsCard, room, source, targets)
+            if callback then
+                callback(sgsCard, source, targets)
+            end
+        end
+    }
+    return card
+end
+
 ---@return sgs.Skill
 function Skill:instance()
     if self.handle then
@@ -129,19 +155,41 @@ function Skill:instance()
     print('skill instance!', self.name, UD.inspect(events))
 
     local name = ('UmaSkill_%03d'):format(self.uid)
-    local skill = sgs.CreateTriggerSkill {
-        name = name,
-        global = true,
-        frequency = skillTypeMap[self.data.type],
-        events = events,
-        on_trigger = function (skill, event, player, context)
-            local callback = callbackMap[event]
-            if callback then
-                return callback(skill, player, context)
-            end
-            return false
-        end,
-    }
+    local skill
+    if self.data.type == '主动' then
+        local card = self:createDummySkillCard(name, callbackMap)
+        skill = sgs.CreateViewAsSkill {
+            name = name,
+            n = 0,
+            view_as = function (sgsSkill, cards)
+                local cardInstance = card:clone()
+                return cardInstance
+            end,
+            enabled_at_play = function (sgsSkill, player)
+                if not player:hasSkill(name) then
+                    return false
+                end
+                if self.data.useOnce and player:hasUsed('#' .. card:objectName()) then
+                    return false
+                end
+                return true
+            end,
+        }
+    else
+        skill = sgs.CreateTriggerSkill {
+            name = name,
+            global = true,
+            frequency = skillTypeMap[self.data.type],
+            events = events,
+            on_trigger = function (sgsSkill, event, player, context)
+                local callback = callbackMap[event]
+                if callback then
+                    return callback(skill, player, context)
+                end
+                return false
+            end,
+        }
+    end
 
     sgs.LoadTranslationTable {
         [name] = self.name,
