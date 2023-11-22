@@ -6,8 +6,9 @@ New 'Uma' ('虹ヶ咲I', {
 })
 
 New 'Skill' ('画🐽', {
-    type = '自动',
-    desc = [[
+    type   = '自动',
+    global = true,
+    desc   = [[
 你每造成1点伤害，对方获得1层“🐽”。
 拥有“🐽”的玩家回合结束时流失1点体力，然后失去一层“🐽”。
 拥有“🐽”的玩家对你造成的伤害-1，然后失去一层“🐽”。
@@ -63,8 +64,7 @@ New 'Skill' ('拍🐽', {
 })
 --回合结束时，场上每有一人拥有“🐽”，你抽一张牌。
 : event('阶段-开始', function (skill, player, context)
-    if not player:hasSkill(skill:objectName())
-    or player:getPhase() ~= sgs.Player_Finish then
+    if player:getPhase() ~= sgs.Player_Finish then
         return
     end
     local room = player:getRoom()

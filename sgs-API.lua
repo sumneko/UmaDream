@@ -3742,8 +3742,8 @@ sgs.CommandType = {}
 ---@field guhuo_type? string
 ---@field events? sgs.TriggerEvent | sgs.TriggerEvent[]
 ---@field global? boolean
----@field on_trigger? fun(sgsSkill: sgs.LuaTriggerSkill, event: sgs.TriggerEvent, player: sgs.ServerPlayer, data: sgs.QVariant): boolean
----@field can_trigger? fun(sgsSkill: sgs.LuaTriggerSkill, target: sgs.ServerPlayer): boolean
+---@field on_trigger? fun(sgsSkill: sgs.LuaTriggerSkill, event: sgs.TriggerEvent, player: sgs.ServerPlayer, data: sgs.QVariant): boolean?
+---@field can_trigger? fun(sgsSkill: sgs.LuaTriggerSkill, target: sgs.ServerPlayer): boolean?
 ---@field view_as_skill? sgs.LuaViewAsSkill
 ---@field priority? number | table<sgs.TriggerEvent, number>
 
@@ -3881,7 +3881,7 @@ function sgs.CreateTrickCard(spec) end
 ---@field n integer
 ---@field guhuo_type? string
 ---@field view_filter? fun(sgsSkill: sgs.LuaViewAsSkill, selected: sgs.Card[], to_select: sgs.Card): boolean
----@field view_as fun(sgsSkill: sgs.LuaViewAsSkill, cards: sgs.Card[]): sgs.Card
+---@field view_as fun(sgsSkill: sgs.LuaViewAsSkill, cards: sgs.Card[]): sgs.Card?
 ---@field should_be_visible? fun(sgsSkill: sgs.LuaViewAsSkill, player: sgs.Player): boolean
 ---@field enabled_at_play? fun(sgsSkill: sgs.LuaViewAsSkill, player: sgs.Player): boolean
 ---@field enabled_at_response? fun(sgsSkill: sgs.LuaViewAsSkill, player: sgs.Player, pattern: string): boolean

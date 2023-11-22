@@ -19,6 +19,9 @@ local uid = 0
 ---@field type Skill.Type
 ---@field desc? string
 ---@field useOnce? boolean # 出牌阶段限一次
+---@field global? boolean
+---@field cost? integer # 需要消耗的手牌数
+---@field costMin? integer # 最少需要消耗的手牌数
 
 ---@class Skill.EventData
 ---@field event Skill.Event
@@ -50,6 +53,7 @@ local skillEventMap = {
     ['卡牌-移动']   = {sgs.CardsMoveOneTime, 'toMoveOneTime'},
     ['主动-使用']   = { -1 },
     ['主动-条件']   = { -2 },
+    ['主动-选牌']   = { -3 },
 }
 
 ---@alias Skill.EventCallback fun(skill: sgs.Skill, player: sgs.ServerPlayer, context: sgs.QVariant)
@@ -60,6 +64,7 @@ local skillEventMap = {
 ---@field event fun(self: Skill, event: '阶段-开始', callback: fun(skill: sgs.Skill, player: sgs.ServerPlayer, context: sgs.QVariant)): Skill
 ---@field event fun(self: Skill, event: '卡牌-移动', callback: fun(skill: sgs.Skill, player: sgs.ServerPlayer, context: sgs.QVariant, moveInfo: sgs.CardsMoveOneTimeStruct)): Skill
 ---@field event fun(self: Skill, event: '主动-使用', callback: fun(card: sgs.LuaSkillCard, source: sgs.ServerPlayer, targets: sgs.ServerPlayer[])): Skill
+---@field event fun(self: Skill, event: '主动-选牌', callback: fun(source: sgs.Player, selected: sgs.Card[], toSelect: sgs.Card): boolean): Skill
 
 ---@param event Skill.Event
 ---@param callback Skill.EventCallback
@@ -102,10 +107,9 @@ function Skill:compileEvents()
             callbackMap[triggerEvent] = function (skill, player, context)
                 local triggerData = key and context[key](context)
                 local suc, res = xpcall(eventData.callback, log.error, skill, player, context, triggerData)
-                if suc then
+                if suc ~= nil then
                     return res
                 end
-                return false
             end
         else
             local callbacks = {}
@@ -120,7 +124,6 @@ function Skill:compileEvents()
                         return res
                     end
                 end
-                return false
             end
         end
     end
@@ -133,15 +136,29 @@ end
 ---@param callbackMap table<sgs.TriggerEvent, function>
 ---@return sgs.LuaSkillCard
 function Skill:createDummySkillCard(name, callbackMap)
-    local event = skillEventMap['主动-使用'][1]
-    local callback = callbackMap[event]
+    local useCallback = callbackMap[skillEventMap['主动-使用'][1]]
+    local filterCallback = callbackMap[skillEventMap['主动-选牌'][1]]
     local card = sgs.CreateSkillCard {
         name = name .. '_Card',
         skill_name = name,
         target_fixed = true,
         on_use = function (sgsCard, room, source, targets)
-            if callback then
-                callback(sgsCard, source, targets)
+            if filterCallback then
+                local subCards = sgsCard:getSubcards()
+                local selected = {}
+                for i = 1, subCards:length() - 1 do
+                    local cardID = subCards:at(i)
+                    local toSelectID = subCards:at(i + 1)
+                    selected[i] = sgs.Sanguosha:getCard(cardID)
+                    local toSelect = sgs.Sanguosha:getCard(toSelectID)
+                    local suc, res = filterCallback(sgsCard, source, selected, toSelect)
+                    if not suc or not res then
+                        return
+                    end
+                end
+            end
+            if useCallback then
+                xpcall(useCallback, log.error, sgsCard, source, targets)
             end
         end
     }
@@ -162,10 +179,30 @@ function Skill:instance()
         local card = self:createDummySkillCard(name, callbackMap)
         skill = sgs.CreateViewAsSkill {
             name = name,
-            n = 0,
+            n = self.data.cost or 0,
             view_as = function (sgsSkill, cards)
+                if #cards < (self.data.costMin or self.data.cost) then
+                    return
+                end
                 local cardInstance = card:clone()
+                for _, card in ipairs(cards) do
+                    cardInstance:addSubcard(card)
+                end
                 return cardInstance
+            end,
+            view_filter = function(sgsSkill, selected, toSelect)
+                if #selected >= (self.data.cost or 0) then
+                    return false
+                end
+                if toSelect:isEquipped() then
+                    return false
+                end
+                local callback = callbackMap[skillEventMap['主动-选牌'][1]]
+                if callback then
+                    local suc, res = xpcall(callback, log.error, sgs.Self, selected, toSelect)
+                    return suc and res
+                end
+                return true
             end,
             enabled_at_play = function (sgsSkill, player)
                 if not player:hasSkill(name) then
@@ -180,7 +217,7 @@ function Skill:instance()
     else
         skill = sgs.CreateTriggerSkill {
             name = name,
-            global = true,
+            global = self.data.global,
             frequency = skillTypeMap[self.data.type],
             events = events,
             on_trigger = function (sgsSkill, event, player, context)
@@ -188,7 +225,6 @@ function Skill:instance()
                 if callback then
                     return callback(skill, player, context)
                 end
-                return false
             end,
         }
     end
