@@ -25,9 +25,13 @@ do
     require 'lua.config'
     ---@diagnostic disable-next-line: undefined-global
     local config = config
-    config.kingdoms[#config.kingdoms+1] = '马娘'
-    config.kingdom_colors['马娘'] = '#ffcc00'
+    config.kingdoms[#config.kingdoms+1] = 'uma'
+    config.kingdom_colors['uma'] = '#ffcc00'
 end
+
+sgs.LoadTranslationTable {
+    ['uma'] = '马娘',
+}
 
 require 'type.uma'
 require 'type.skill'
