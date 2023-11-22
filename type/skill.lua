@@ -47,6 +47,7 @@ local skillEventMap = {
     ['伤害-造成前'] = { sgs.DamageInflicted, 'toDamage'},
     ['伤害-造成后'] = { sgs.Damage, 'toDamage' },
     ['阶段-开始']   = { sgs.EventPhaseStart, nil },
+    ['卡牌-移动']   = {sgs.CardsMoveOneTime, 'toMoveOneTime'},
     ['主动-使用']   = { -1 },
     ['主动-条件']   = { -2 },
 }
@@ -57,6 +58,7 @@ local skillEventMap = {
 ---@field event fun(self: Skill, event: '伤害-造成前', callback: fun(skill: sgs.Skill, player: sgs.ServerPlayer, context: sgs.QVariant, damage: sgs.DamageStruct): boolean?): Skill
 ---@field event fun(self: Skill, event: '伤害-造成后', callback: fun(skill: sgs.Skill, player: sgs.ServerPlayer, context: sgs.QVariant, damage: sgs.DamageStruct): boolean?): Skill
 ---@field event fun(self: Skill, event: '阶段-开始', callback: fun(skill: sgs.Skill, player: sgs.ServerPlayer, context: sgs.QVariant)): Skill
+---@field event fun(self: Skill, event: '卡牌-移动', callback: fun(skill: sgs.Skill, player: sgs.ServerPlayer, context: sgs.QVariant, moveInfo: sgs.CardsMoveOneTimeStruct)): Skill
 ---@field event fun(self: Skill, event: '主动-使用', callback: fun(card: sgs.LuaSkillCard, source: sgs.ServerPlayer, targets: sgs.ServerPlayer[])): Skill
 
 ---@param event Skill.Event

@@ -824,11 +824,11 @@ function ServerPlayer:marshal(player) end
 ---@param pile_name string
 ---@param card_ids sgs.IntList
 ---@param open boolean
----@param open_players sgs.SPlayerList
----@param reason sgs.CardMoveReason
----@overload fun(pile_name: string, card: sgs.Card, open: boolean, open_players: sgs.SPlayerList)
----@overload fun(pile_name: string, card_id: integer, open: boolean, open_players: sgs.SPlayerList)
----@overload fun(pile_name: string, card_ids: sgs.IntList, open: boolean, open_players: sgs.SPlayerList)
+---@param open_players? sgs.SPlayerList
+---@param reason? sgs.CardMoveReason
+---@overload fun(self: sgs.ServerPlayer, pile_name: string, card: sgs.Card, open?: boolean, open_players?: sgs.SPlayerList)
+---@overload fun(self: sgs.ServerPlayer, pile_name: string, card_id: integer, open?: boolean, open_players?: sgs.SPlayerList)
+---@overload fun(self: sgs.ServerPlayer, pile_name: string, card_ids: sgs.IntList, open?: boolean, open_players?: sgs.SPlayerList)
 function ServerPlayer:addToPile(pile_name, card_ids, open, open_players, reason) end
 
 ---@param skill_name string
@@ -3951,3 +3951,10 @@ function sgs.Alert(msg) end
 
 ---@return sgs.SkillList
 function sgs.SkillList() end
+
+---@param list any
+---@return fun(): integer, any
+function sgs.list(list) end
+
+---@return sgs.IntList
+function sgs.IntList() end

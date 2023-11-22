@@ -37,6 +37,7 @@ end)
 --拥有“🐽”的玩家对你造成的伤害-1，然后失去一层“🐽”。
 : event('伤害-造成前', function (skill, player, context, damage)
     if not damage.from
+    or damage.to ~= player
     or not damage.to:hasSkill(skill:objectName())
     or damage.from:getMark('&zhubi') == 0
     or damage.damage <= 0 then

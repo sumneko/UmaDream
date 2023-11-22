@@ -10,6 +10,7 @@ New   = require 'tools.class'.new
 
 require 'tools.log'
 UD.inspect = require 'tools.inspect'
+UD.util    = require 'tools.utility'
 
 ---@class Log
 log = New 'Log' {
@@ -32,12 +33,12 @@ require 'type.uma'
 require 'type.skill'
 
 require 'umas.hongxiao'
---require 'umas.miemie'
+require 'umas.miemie'
 
-for _, uma in pairs(Class 'Uma'.map) do
+for _, uma in UD.util.sortPairs(Class 'Uma'.map) do
     uma:instance(umaDream)
 end
-for _, skill in pairs(Class 'Skill'.map) do
+for _, skill in UD.util.sortPairs(Class 'Skill'.map) do
     skill:instance()
 end
 
