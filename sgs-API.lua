@@ -2068,13 +2068,13 @@ function Room:drawCard() end
 
 ---@param card_ids sgs.IntList
 ---@param who sgs.ServerPlayer
----@param disabled_ids sgs.IntList
+---@param disabled_ids? sgs.IntList
 function Room:fillAG(card_ids, who, disabled_ids) end
 
 ---@param player sgs.ServerPlayer
 ---@param card_id integer
 ---@param move_cards boolean
----@param to_notify sgs.SPlayerList
+---@param to_notify? sgs.SPlayerList
 function Room:takeAG(player, card_id, move_cards, to_notify) end
 
 ---@param player sgs.ServerPlayer

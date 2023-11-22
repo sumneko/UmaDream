@@ -50,7 +50,7 @@ local skillEventMap = {
     ['伤害-造成前'] = { sgs.DamageInflicted, 'toDamage'},
     ['伤害-造成后'] = { sgs.Damage, 'toDamage' },
     ['阶段-开始']   = { sgs.EventPhaseStart, nil },
-    ['卡牌-移动']   = {sgs.CardsMoveOneTime, 'toMoveOneTime'},
+    ['卡牌-移动']   = { sgs.CardsMoveOneTime, 'toMoveOneTime'},
     ['主动-使用']   = { -1 },
     ['主动-条件']   = { -2 },
     ['主动-选牌']   = { -3 },
@@ -104,11 +104,20 @@ function Skill:compileEvents()
         local eventData = eventDatas[1]
         local key = eventData.dataKey
         if #eventDatas == 1 then
-            callbackMap[triggerEvent] = function (skill, player, context)
-                local triggerData = key and context[key](context)
-                local suc, res = xpcall(eventData.callback, log.error, skill, player, context, triggerData)
-                if suc ~= nil then
-                    return res
+            if triggerEvent > 0 then
+                callbackMap[triggerEvent] = function (skill, player, context)
+                    local triggerData = key and context[key](context)
+                    local suc, res = xpcall(eventData.callback, log.error, skill, player, context, triggerData)
+                    if suc and res ~= nil then
+                        return res
+                    end
+                end
+            else
+                callbackMap[triggerEvent] = function (...)
+                    local suc, res = xpcall(eventData.callback, log.error, ...)
+                    if suc and res ~= nil then
+                        return res
+                    end
                 end
             end
         else
@@ -116,12 +125,23 @@ function Skill:compileEvents()
             for _, eData in ipairs(eventDatas) do
                 callbacks[#callbacks+1] = eData.callback
             end
-            callbackMap[eventData.sgsEvent] = function (skill, player, context)
-                local triggerData = key and context[key](context)
-                for _, callback in ipairs(callbacks) do
-                    local suc, res = xpcall(callback, log.error, skill, player, context, triggerData)
-                    if suc and res ~= nil then
-                        return res
+            if triggerEvent > 0 then
+                callbackMap[eventData.sgsEvent] = function (skill, player, context)
+                    local triggerData = key and context[key](context)
+                    for _, callback in ipairs(callbacks) do
+                        local suc, res = xpcall(callback, log.error, skill, player, context, triggerData)
+                        if suc and res ~= nil then
+                            return res
+                        end
+                    end
+                end
+            else
+                callbackMap[eventData.sgsEvent] = function (...)
+                    for _, callback in ipairs(callbacks) do
+                        local suc, res = xpcall(callback, log.error, ...)
+                        if suc and res ~= nil then
+                            return res
+                        end
                     end
                 end
             end
@@ -143,6 +163,7 @@ function Skill:createDummySkillCard(name, callbackMap)
         skill_name = name,
         target_fixed = true,
         on_use = function (sgsCard, room, source, targets)
+            print('on_usse', filterCallback)
             if filterCallback then
                 local subCards = sgsCard:getSubcards()
                 local selected = {}
@@ -151,14 +172,14 @@ function Skill:createDummySkillCard(name, callbackMap)
                     local toSelectID = subCards:at(i + 1)
                     selected[i] = sgs.Sanguosha:getCard(cardID)
                     local toSelect = sgs.Sanguosha:getCard(toSelectID)
-                    local suc, res = filterCallback(sgsCard, source, selected, toSelect)
-                    if not suc or not res then
+                    local res = filterCallback(source, selected, toSelect)
+                    if not res then
                         return
                     end
                 end
             end
             if useCallback then
-                xpcall(useCallback, log.error, sgsCard, source, targets)
+                useCallback(sgsCard, source, targets)
             end
         end
     }
@@ -199,8 +220,7 @@ function Skill:instance()
                 end
                 local callback = callbackMap[skillEventMap['主动-选牌'][1]]
                 if callback then
-                    local suc, res = xpcall(callback, log.error, sgs.Self, selected, toSelect)
-                    return suc and res
+                    return callback(sgs.Self, selected, toSelect)
                 end
                 return true
             end,

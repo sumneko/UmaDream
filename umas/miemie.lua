@@ -44,7 +44,8 @@ New 'Skill' ('爆照', {
     if not moveInfo.to
     or moveInfo.to:objectName() ~= player:objectName()
     or moveInfo.from == moveInfo.to
-    or moveInfo.to_place ~= sgs.Player_PlaceHand then
+    or moveInfo.to_place ~= sgs.Player_PlaceHand
+    or UD.util.arrayHas(moveInfo.from_pile_names, 'qunjinhua') then
         return
     end
     local room = player:getRoom()
@@ -74,7 +75,6 @@ New 'Skill' ('圆角', {
         local card = sgs.Sanguosha:getCard(cardID)
         if  room:getCardPlace(cardID) == sgs.Player_DiscardPile
         and checkCard(card, player) then
-            print('addCard', card)
             room:moveCardTo(card, player, sgs.Player_PlaceHand, true)
         end
     end
@@ -84,6 +84,7 @@ New 'Skill' ('胆小', {
     type = '主动',
     cost = 999,
     costMin = 1,
+    useOnce = true,
     desc = [[
 每回合限一次，将任意张手牌与“群精华”中的牌交换（不触发【爆照】）。
 ]]
@@ -92,7 +93,22 @@ New 'Skill' ('胆小', {
     return #selected < source:getPile("qunjinhua"):length()
 end)
 : event('主动-使用', function (card, source, targets)
-    print('发动！')
+    local subCards = card:getSubcards()
+    local count = subCards:length()
+    local room = source:getRoom()
+    local cardIDs = source:getPile("qunjinhua")
+    room:fillAG(cardIDs, source)
+    for _ = 1, count do
+        local cardID = room:askForAG(source, cardIDs, false, card:objectName())
+        room:takeAG(source, cardID, true)
+        --cardIDs:removeOne(cardID)
+        --room:moveCardTo(sgs.Sanguosha:getCard(cardID), source, sgs.Player_PlaceHand, true)
+    end
+    room:clearAG(source)
+    for _, cardID in sgs.qlist(subCards) do
+        local card = sgs.Sanguosha:getCard(cardID)
+        source:addToPile('qunjinhua', card, true)
+    end
 end)
 
 return uma
