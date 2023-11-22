@@ -9,6 +9,7 @@ Uma.map = {}
 local uid = 0
 
 ---@class Uma.Data
+---@field id string
 ---@field hp integer
 ---@field showName? string # 显示名，默认为名字
 ---@field title? string # 头衔
@@ -35,17 +36,17 @@ function Uma:instance(package)
     if self.handle then
         return self.handle
     end
-    local name = ('Uma_%03d'):format(self.uid)
-    local general = sgs.General(package, name, '马娘', self.data.hp, false, false, false)
+    local id = self.data.id
+    local general = sgs.General(package, id, '马娘', self.data.hp, false, false, false)
     self.handle = general
 
     sgs.LoadTranslationTable {
-        [name] = self.name,
-        ["&" .. name] = self.data.showName,
-        ["#" .. name] = self.data.title,
-        ["designer:" .. name] = self.data.designer,
-        ["cv:" .. name] = self.data.cv,
-        ["illustrator:" .. name] = self.data.illustrator,
+        [id] = self.name,
+        ["&" .. id] = self.data.showName,
+        ["#" .. id] = self.data.title,
+        ["designer:" .. id] = self.data.designer,
+        ["cv:" .. id] = self.data.cv,
+        ["illustrator:" .. id] = self.data.illustrator,
     }
 
     for _, skillName in ipairs(self.data.skills or {}) do

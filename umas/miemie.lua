@@ -1,4 +1,5 @@
 local uma = New 'Uma' ('是咩咩不是喵喵、', {
+    id       = 'uma_miemie',
     hp       = 6,
     title    = '🐏',
     designer = '最萌小汐',

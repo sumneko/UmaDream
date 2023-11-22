@@ -1,4 +1,5 @@
 New 'Uma' ('虹ヶ咲I', {
+    id       = 'uma_hongxiao',
     hp       = 6,
     title    = '🐷',
     designer = '最萌小汐',
