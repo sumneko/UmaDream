@@ -62,11 +62,12 @@ end)
 New 'Skill' ('圆角', {
     type = '被动',
     desc = [[
-每当一张牌从你之外的地方进入弃牌堆时，若它的花色、点数、名字均可以在“群精华”中找到，则将其置入你的手牌（不触发【爆照】）。
+回合外每当一张牌从你之外的地方进入弃牌堆时，若它的花色、点数、名字均可以在“群精华”中找到，则将其置入你的手牌（不触发【爆照】）。
 ]]
 })
 : event('卡牌-移动', function (skill, player, context, moveInfo)
     if moveInfo.to_place ~= sgs.Player_DiscardPile
+    or player:getPhase() ~= sgs.Player_NotActive
     or (moveInfo.from and moveInfo.from:objectName() == player:objectName()) then
         return
     end
@@ -100,9 +101,8 @@ end)
     room:fillAG(cardIDs, source)
     for _ = 1, count do
         local cardID = room:askForAG(source, cardIDs, false, card:objectName())
-        room:takeAG(source, cardID, true)
-        --cardIDs:removeOne(cardID)
-        --room:moveCardTo(sgs.Sanguosha:getCard(cardID), source, sgs.Player_PlaceHand, true)
+        room:takeAG(source, cardID, false)
+        room:moveCardTo(sgs.Sanguosha:getCard(cardID), source, sgs.Player_PlaceHand, true)
     end
     room:clearAG(source)
     for _, cardID in sgs.qlist(subCards) do

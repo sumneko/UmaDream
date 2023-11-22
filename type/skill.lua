@@ -202,7 +202,7 @@ function Skill:instance()
             name = name,
             n = self.data.cost or 0,
             view_as = function (sgsSkill, cards)
-                if #cards < (self.data.costMin or self.data.cost) then
+                if #cards < (self.data.costMin or self.data.cost or 0) then
                     return
                 end
                 local cardInstance = card:clone()
